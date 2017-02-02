@@ -18,7 +18,7 @@ MongoClient.connect('mongodb://localhost:27017/TodoApp', (err, db)=>{
 		console.log(JSON.stringify(result.ops, undefined, 2));
 	}); */
 	
-	db.collection('Users').insertOne({
+	db.collection('users').insertOne({
 		name : "Matt Pedersen",
 		age: 27,
 		location: "Colorado Springs"
