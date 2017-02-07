@@ -29,7 +29,7 @@ const users = [{
 	password: "guest1",
 	tokens: [{
 		access: "auth",
-		token: jwt.sign({_id: user1Id, access: 'auth'}, '123abc').toString()
+		token: jwt.sign({_id: user1Id, access: 'auth'}, 'abc123').toString()
 	}]
 },{
 	_id: user2Id,
