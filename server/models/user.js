@@ -45,10 +45,15 @@ UserSchema.methods.generateAuthToken = function(){
 	var user = this;
 	var access = 'auth';
 	console.log('Generating auth token...');
-	var token = jwt.sign({
-		_id: user._id.toHexString(),
-		access
-	},process.env.JWT_SECRET);
+	try {
+		var token = jwt.sign({
+			_id: user._id.toHexString(),
+			access
+		},process.env.JWT_SECRET);
+	} catch(e) {
+		console.log('Coule not create token', e);
+	}
+	
 	
 	console.log('token generated!');
 
