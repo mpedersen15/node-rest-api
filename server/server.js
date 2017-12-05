@@ -6,7 +6,7 @@ const bodyParser = require('body-parser');
 const {ObjectID} = require('mongodb');
 
 var {mongoose} = require('./db/mongoose');
-var {Todo} = require('./models/todo');
+var {Sleep} = require('./models/sleep');
 var {User} = require('./models/user');
 var {authenticate} = require('./middleware/authenticate');
 
@@ -38,33 +38,31 @@ app.use(function (req, res, next) {
     next();
 });
 
-app.post('/todos', authenticate, (req, res)=>{
-	
-	var todo = new Todo({
-		text: req.body.text,
+app.post('/sleeps', authenticate, (req, res) => {
+	let now = new Date().getTime();
+	var sleep = new Sleep({
+		rawData: req.body.rawData,
+		startTime: now,
+		endTime: now + 6*3600*1000,
 		_creator: req.user._id
 	});
 	
-	todo.save().then((todo)=>{
-		res.send(todo);
+	sleep.save().then((sleep)=>{
+		res.send(sleep);
 	},(e)=>{
 		res.status(400).send(e);
 	});
 });
 
-app.get('/todos', authenticate, (req, res)=>{
-	
-	Todo.find({
-		_creator: req.user._id
-	}).then((todos)=>{
-		res.send({todos});
-	}, (e)=>{
-		res.status(400).send(e);
-	});
-	
+app.get('/sleeps', authenticate, (req, res) => {
+	Sleep.find({ _creator: req.user._id})
+		.then(
+			sleeps => res.send({sleeps}),
+			e => res.status(404).send(e)
+		);
 });
 
-app.get('/todos/:id', authenticate, (req, res)=>{
+/* app.get('/todos/:id', authenticate, (req, res)=>{
 	var id = req.params.id;
 	
 	if (!ObjectID.isValid(id)){
@@ -83,9 +81,9 @@ app.get('/todos/:id', authenticate, (req, res)=>{
 		res.status(400).send();
 	});
 	
-});
+}); */
 
-app.delete('/todos/:id', authenticate, (req, res) => {
+/* app.delete('/todos/:id', authenticate, (req, res) => {
 	var id = req.params.id;
 	
 	if (!ObjectID.isValid(id)){
@@ -103,9 +101,9 @@ app.delete('/todos/:id', authenticate, (req, res) => {
 	}).catch((e) =>{
 		res.status(400).send();
 	}); 
-});
+}); */
 
-app.patch('/todos/:id', authenticate, (req, res) => {
+/* app.patch('/todos/:id', authenticate, (req, res) => {
 	var id = req.params.id;
 	
 	var body = _.pick(req.body, ['text', 'completed']);
@@ -132,10 +130,12 @@ app.patch('/todos/:id', authenticate, (req, res) => {
 	}).catch((e) =>{
 		res.status(400).send();
 	}); 
-});
+}); */
 
 app.post('/users', (req, res) => {
 	var body = _.pick(req.body, ['email', 'password']);
+
+	console.log(JSON.stringify(body));
 
 	var user = new User(body);
 	
@@ -175,7 +175,7 @@ app.delete('/users/me/token', authenticate, (req, res) => {
 });
 
 app.listen(port, ()=>{
-	console.log('Server up on port 3000');
+	console.log(`Server up on port ${port}`);
 });
 
 module.exports = {app};
