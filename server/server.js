@@ -146,7 +146,18 @@ app.post('/users', (req, res) => {
 		res.header('x-auth', token).send(user);
 	}).catch((e) => {
 		console.log(JSON.stringify(e));
-		res.status(400).send(e);
+		let error = e;
+		if (e.errmsg && e.errmsg.indexOf('duplicate key error')) {
+			error = {
+				message: "A user with that email already exists. Please login to continue."
+			};
+		}else if(e.errors && e.errors.password.message.indexOf('shorter than minimum')) {
+			error = {
+				message: "Chosen password is shorter than the minimum length"
+			};
+		}
+		
+		res.status(400).send(error);
 	});
 });
 
