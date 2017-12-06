@@ -8,6 +8,7 @@ const {ObjectID} = require('mongodb');
 var {mongoose} = require('./db/mongoose');
 var {Sleep} = require('./models/sleep');
 var {User} = require('./models/user');
+var {Trend} = require('./models/trend');
 var {authenticate} = require('./middleware/authenticate');
 
 var app = express();
@@ -48,7 +49,21 @@ app.post('/sleeps', authenticate, (req, res) => {
 	});
 	
 	sleep.save().then((sleep)=>{
-		res.send(sleep);
+
+		let trend = Trend.findOne({ _creator: req.user._id }).then(
+			trend => {
+				trend.updateTrend(sleep).then(
+					trend => {
+						res.send({ sleep, trend });
+					},
+					e => res.status(400).send(e)
+				);
+				
+			},
+			e => res.status(400).send(e)
+		);
+
+		
 	},(e)=>{
 		res.status(400).send(e);
 	});
@@ -143,7 +158,16 @@ app.post('/users', (req, res) => {
 		console.log('Need to generate auth token');
 		return user.generateAuthToken();
 	}).then((token) => {
-		res.header('x-auth', token).send(user);
+
+		let trend = new Trend({
+			_creator: user._id
+		});
+
+		trend.save().then(() => {
+			res.header('x-auth', token).send(user);
+		});
+
+		
 	}).catch((e) => {
 		console.log(JSON.stringify(e));
 		let error = e;
